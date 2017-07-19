@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script>
+$(document).ready(function(){
+	$.get('https://coscup.org/2017-assets/json/submissions.json',function(data){
+    		const ctx = document.getElementById('canvas').getContext('2d');
+            ctx.font = '12px serif';
+            const coscup_day1_start = new Date('2017-08-05T08:00:00');
+            const coscup_day2_start = new Date('2017-08-06T08:00:00');
+			
+			const room_width = 300;
+			const y_scale = 4;
+
+			ctx.fillText('day1', 20, 10);
+			ctx.fillText('day2', 20, 10+(11*60)*y_scale);
+
+            let rooms = Array.from(new Set(data.map(function(item){return item.room;})));
+            rooms.sort();
+			
+			rooms.forEach(function(room, index){
+				const x = (index*room_width)+10;
+				ctx.fillText(room, x, 50);
+				ctx.fillText(room, x, 50+(11*60)*y_scale);
+			});
+
+        	data.forEach(function(item){
+            	const start = new Date(item.start);
+                const end = new Date(item.end);
+
+                let day;
+				let day_start;
+                if(start.getDate()===5){
+                	day = 0;
+					day_start = coscup_day1_start;
+                }else{
+					day = 1;
+					day_start = coscup_day2_start;
+                }
+				const start_second = (start-day_start)/1000;
+				const end_second = (end-day_start)/1000;
+
+                
+                const day_offset = (11*60*day)*y_scale;
+                const x = rooms.indexOf(item.room)*room_width;
+                const y_start = day_offset+(start_second/60)*y_scale;
+                const y_end = day_offset+(end_second/60)*y_scale;
+                ctx.strokeRect(x, y_start, room_width, y_end-y_start);
+				ctx.fillText(start.toTimeString(), x, y_start+12);
+				ctx.fillText(end.toTimeString(), x, y_end-1);
+            	ctx.fillText(item.subject, x, y_start+30);
+				ctx.fillText(item.speaker.name, x, y_start+50);
+            })
+        },'json');
+    $("button").click(function(){
+    });
+});
+</script>
+</head>
+<body bgcolor="pink">
+<h2>COSCUP 2017</h2>
+<p>canvas begin</p>
+<canvas id="canvas" width="2560" height="5120"></canvas>
+<p>canvas end</p>
+</body>
+</html>
